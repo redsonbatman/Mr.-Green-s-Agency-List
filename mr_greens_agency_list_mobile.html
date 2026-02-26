@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mr. Green's Agency List</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --lime-bright: #93E01B;  
+            --lime-gloss-top: #B7F554;
+            --lime-gloss-mid: #93E01B;
+            --lime-gloss-mid-dark: #7DC90F;
+            --lime-gloss-bottom: #6AB300;
+            
+            --silver-light: #F5F5F7; 
+            --silver-dark: #E1E1E6;
+            
+            --text-main: #1D1D1F;
+            --text-muted: #515154;
+            
+            --card-bg: rgba(255, 255, 255, 0.85); 
+            --border: #D2D2D7;
+            --row-hover: rgba(147, 224, 27, 0.1); 
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #F5F5F7;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(147, 224, 27, 0.25) 0%, transparent 60%),
+                radial-gradient(circle at 90% 80%, rgba(147, 224, 27, 0.20) 0%, transparent 60%),
+                linear-gradient(135deg, rgba(255,255,255,0.5) 0%, transparent 100%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Header & Controls */
+        header {
+            width: 100%;
+            padding: 2.5rem 1.5rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            background-color: rgba(245, 245, 247, 0.7);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: var(--text-main);
+            margin-bottom: 1.5rem;
+            text-align: center;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+        }
+
+        h1 span {
+            color: var(--lime-gloss-bottom);
+        }
+
+        .controls-container {
+            display: flex;
+            gap: 1rem;
+            width: 100%;
+            max-width: 800px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .search-wrapper {
+            position: relative;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.9rem 1.5rem 0.9rem 3.2rem;
+            font-size: 1.05rem;
+            font-family: inherit;
+            border: 1px solid var(--border);
+            border-radius: 9999px;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: var(--text-main);
+            outline: none;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05), 0 2px 5px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus, .sort-select:focus {
+            border-color: var(--lime-bright);
+            box-shadow: 0 0 0 4px rgba(147, 224, 27, 0.3), inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .sort-wrapper {
+            position: relative;
+        }
+
+        .sort-select {
+            appearance: none;
+            padding: 0.9rem 2.5rem 0.9rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            font-family: inherit;
+            border: 1px solid var(--border);
+            border-radius: 9999px;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: var(--text-main);
+            outline: none;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05), 0 2px 5px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .sort-dropdown-icon {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            pointer-events: none;
+            color: var(--text-muted);
+        }
+
+        /* Table Container */
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            padding: 2rem 1.5rem;
+            flex: 1;
+        }
+
+        .table-wrapper {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05), inset 0 0 0 1px rgba(255,255,255,0.8);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            overflow: hidden;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background-color: rgba(250, 250, 250, 0.8);
+            padding: 1.25rem 1.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        th:hover {
+            background-color: rgba(235, 235, 240, 0.8);
+            color: var(--text-main);
+        }
+
+        .th-content {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sort-icon {
+            display: flex;
+            flex-direction: column;
+            opacity: 0.3;
+            transition: opacity 0.2s;
+            font-size: 0.6rem;
+            line-height: 0.8;
+        }
+
+        th.active .sort-icon {
+            opacity: 1;
+            color: var(--lime-gloss-bottom);
+        }
+
+        td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid rgba(210, 210, 215, 0.5);
+            font-size: 0.95rem;
+            color: var(--text-main);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr {
+            transition: background-color 0.2s ease;
+        }
+
+        tr:hover td {
+            background-color: var(--row-hover);
+        }
+
+        .agency-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .agency-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            object-fit: contain;
+            background-color: #ffffff;
+            border: 1px solid var(--border);
+            padding: 3px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .agency-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        .link-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.45rem 1.2rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: inset 0px 1px 1px rgba(255,255,255,0.6), 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-web {
+            background: linear-gradient(180deg, var(--lime-gloss-top) 0%, var(--lime-gloss-mid) 49%, var(--lime-gloss-mid-dark) 51%, var(--lime-gloss-bottom) 100%);
+            color: white;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.25);
+            border: 1px solid #63A300;
+        }
+
+        .btn-web:hover {
+            background: linear-gradient(180deg, #C4F773 0%, #A5ED29 49%, #8ED915 51%, #79C200 100%);
+            transform: translateY(-1px);
+            box-shadow: inset 0px 1px 1px rgba(255,255,255,0.8), 0 3px 6px rgba(147, 224, 27, 0.3);
+        }
+        
+        .btn-web:active {
+            transform: translateY(1px);
+            box-shadow: inset 0px 2px 4px rgba(0,0,0,0.2);
+            background: linear-gradient(180deg, var(--lime-gloss-bottom) 0%, var(--lime-gloss-mid-dark) 100%);
+        }
+
+        .btn-profile {
+            background: linear-gradient(180deg, #FFFFFF 0%, #F0F0F0 49%, #E0E0E0 51%, #D0D0D0 100%);
+            color: #333;
+            text-shadow: 0 1px 1px rgba(255,255,255,0.8);
+            border: 1px solid #A0A0A0;
+        }
+
+        .btn-profile:hover {
+            background: linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 49%, #E8E8E8 51%, #D8D8D8 100%);
+            transform: translateY(-1px);
+            box-shadow: inset 0px 1px 1px rgba(255,255,255,1), 0 3px 6px rgba(0,0,0,0.1);
+        }
+        
+        .btn-profile:active {
+            transform: translateY(1px);
+            box-shadow: inset 0px 2px 4px rgba(0,0,0,0.15);
+            background: linear-gradient(180deg, #D0D0D0 0%, #E0E0E0 100%);
+        }
+
+        .no-link {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-style: italic;
+            opacity: 0.7;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .no-results svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+            color: var(--lime-gloss-bottom);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- MOBILE RESPONSIVE STYLES --- */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; margin-bottom: 1rem; }
+            
+            .controls-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .sort-wrapper { width: 100%; }
+            .sort-select { width: 100%; }
+            
+            /* Convert Table to Card List on Mobile */
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            
+            /* Hide table headers on mobile */
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            
+            .table-wrapper {
+                background: transparent;
+                box-shadow: none;
+                border: none;
+                backdrop-filter: none;
+            }
+            
+            tr {
+                background: var(--card-bg);
+                border-radius: 16px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05), inset 0 0 0 1px rgba(255,255,255,0.8);
+                border: 1px solid var(--border);
+                backdrop-filter: blur(12px);
+                margin-bottom: 1rem;
+                padding: 1rem;
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            td {
+                padding: 0;
+                border: none;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            
+            /* Agency Name spans full width */
+            td:first-child {
+                justify-content: flex-start;
+                margin-bottom: 0.5rem;
+                padding-bottom: 0.75rem;
+                border-bottom: 1px solid rgba(210, 210, 215, 0.5);
+            }
+            
+            .link-badge {
+                width: 100%;
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            td:nth-child(2), td:nth-child(3) {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Mr. Green's <span>Agency List</span></h1>
+        <div class="controls-container">
+            <div class="search-wrapper">
+                <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search agencies by name...">
+            </div>
+            
+            <div class="sort-wrapper">
+                <select id="sortSelect" class="sort-select">
+                    <option value="name_asc">Sort: Name (A to Z)</option>
+                    <option value="name_desc">Sort: Name (Z to A)</option>
+                    <option value="web_asc">Sort: Website</option>
+                    <option value="prof_asc">Sort: Trusted Herd Profile</option>
+                </select>
+                <svg class="sort-dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="table-wrapper">
+            <table id="agencyTable">
+                <thead>
+                    <tr>
+                        <th onclick="handleHeaderSort('Agency Name', 'name')" id="th-name">
+                            <div class="th-content">
+                                Agency Name 
+                                <span class="sort-icon" id="sort-Agency Name"><span>▲</span><span>▼</span></span>
+                            </div>
+                        </th>
+                        <th onclick="handleHeaderSort('Website URL', 'web')" id="th-web">
+                            <div class="th-content">
+                                Website 
+                                <span class="sort-icon" id="sort-Website URL"><span>▲</span><span>▼</span></span>
+                            </div>
+                        </th>
+                        <th onclick="handleHeaderSort('Profile URL', 'prof')" id="th-prof">
+                            <div class="th-content">
+                                Trusted Herd Profile 
+                                <span class="sort-icon" id="sort-Profile URL"><span>▲</span><span>▼</span></span>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Rows injected via JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const rawData = [{"Agency Name": "Peralta Experiences LLC ", "Website URL": "http://www.peraltaexperiences.com/", "Profile URL": "https://www.trustedherd.com/companies/peralta-experiences-llc/overview"}, {"Agency Name": "1122 Management ", "Website URL": "https://www.1122marketing.com/", "Profile URL": "https://www.trustedherd.com/companies/1122-management/overview"}, {"Agency Name": "dMEO Marketing ", "Website URL": "http://dmeomarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/dmeo-marketing/overview"}, {"Agency Name": "iCandy Event Staffing ", "Website URL": "https://icandyeventstaffing.com/", "Profile URL": "https://www.trustedherd.com/companies/icandy-event-staffing/overview"}, {"Agency Name": "Vibrance Marketing ", "Website URL": "https://vibrancemarketing.co/join-the-team", "Profile URL": "https://www.trustedherd.com/companies/vibrance-markering/overview"}, {"Agency Name": "Event Talent Management ", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/event-talent-management/overview"}, {"Agency Name": "Brand Ambassador Consultants ", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/brand-ambassador-consultants/overview"}, {"Agency Name": "Forte Event Marketing ", "Website URL": "http://www.forteeventmarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/forte-event-marketing/overview"}, {"Agency Name": "THTest ", "Website URL": "http://www.xocialmarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/xocial-marketing/overview"}, {"Agency Name": "Pyramid Consulting Group, LLC ", "Website URL": "http://www.pyramidcg.com/", "Profile URL": "https://www.trustedherd.com/companies/pyramid-consulting-group-llc/overview"}, {"Agency Name": "Turnkey ", "Website URL": "http://www.goturnkey.com/", "Profile URL": "https://www.trustedherd.com/companies/turnkey-dot/overview"}, {"Agency Name": "Gail and Rice ", "Website URL": "https://www.gail-rice.com/", "Profile URL": "https://www.trustedherd.com/companies/gail-and-rice/overview"}, {"Agency Name": "AHirePower ", "Website URL": "http://www.ahirepower.com/", "Profile URL": "https://www.trustedherd.com/companies/ahirepower/overview"}, {"Agency Name": "TeamBonding ", "Website URL": "https://www.teambonding.com/", "Profile URL": "https://www.trustedherd.com/companies/teambonding/overview"}, {"Agency Name": "EventNext ", "Website URL": "http://www.eventnext.com/", "Profile URL": "https://www.trustedherd.com/companies/eventnext/overview"}, {"Agency Name": "Next Level Marketing ", "Website URL": "http://www.nextlevel-co.com/", "Profile URL": "https://www.trustedherd.com/companies/next-level-marketing/overview"}, {"Agency Name": "Karma Casting ", "Website URL": "http://www.karmacasting.com/", "Profile URL": "https://www.trustedherd.com/companies/karma-casting/overview"}, {"Agency Name": "Elevate Staffing & Events ", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/elevate-staffing--events/overview"}, {"Agency Name": "EventLink Group ", "Website URL": "http://www.go2eventlink.com/", "Profile URL": "https://www.trustedherd.com/companies/eventlink/overview"}, {"Agency Name": "All Aces Promotional Staffing ", "Website URL": "http://www.acespromo.com/", "Profile URL": "https://www.trustedherd.com/companies/all-aces-promotional-staffing/overview"}, {"Agency Name": "Alliance Marketing Partners ", "Website URL": "https://ampmktg.com/", "Profile URL": "https://www.trustedherd.com/companies/alliance-marketing-partners/overview"}, {"Agency Name": "Peralta Experiences LLC", "Website URL": "http://www.peraltaexperiences.com/", "Profile URL": "https://www.trustedherd.com/companies/peralta-experiences-llc/overview"}, {"Agency Name": "Oxford Marketing", "Website URL": "http://www.oxfordmarketingus.com/", "Profile URL": "https://www.trustedherd.com/companies/oxford-marketing/overview"}, {"Agency Name": "A+ Staffing", "Website URL": "http://www.apluspeople.com/", "Profile URL": "https://www.trustedherd.com/companies/a-staffing/overview"}, {"Agency Name": "Greenhouse Agency", "Website URL": "http://www.wearegreenhouse.com/", "Profile URL": "https://www.trustedherd.com/companies/greenhouse-agency/overview"}, {"Agency Name": "KiZE Concepts LLC", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/kize-concepts-llc/overview"}, {"Agency Name": "Samplers, Inc.", "Website URL": "https://portal.samplersinc.com/ref/907b8568571145d280e2e82e8439d964", "Profile URL": "https://www.trustedherd.com/companies/samplers-inc/overview"}, {"Agency Name": "InVogue Marketing", "Website URL": "http://www.invoguemarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/invogue-marketing/overview"}, {"Agency Name": "PS-Stearns, INC.", "Website URL": "http://www.ps-stearns.com/", "Profile URL": "https://www.trustedherd.com/companies/psstearns-inc/overview"}, {"Agency Name": "TEAM", "Website URL": "http://www.weareteam.com/", "Profile URL": "https://www.trustedherd.com/companies/team-enterprises/overview"}, {"Agency Name": "Top Flight Promotions, LLC", "Website URL": "http://www.topflightpromos.com/", "Profile URL": "https://www.trustedherd.com/companies/top-flight-promotions-llc/overview"}, {"Agency Name": "Savvy Cie", "Website URL": "http://www.savvycie.com/", "Profile URL": "https://www.trustedherd.com/companies/savvy-cie/overview"}, {"Agency Name": "LVT Model & Talent Management", "Website URL": "https://www.lvtmodels.com/", "Profile URL": "https://www.trustedherd.com/companies/lvt-model--talent-management/overview"}, {"Agency Name": "Ignite Productions", "Website URL": "http://igniteproductions.co/", "Profile URL": "https://www.trustedherd.com/companies/ignite-productions/overview"}, {"Agency Name": "The Hype! Agency", "Website URL": "http://thehypeagency.com/", "Profile URL": "https://www.trustedherd.com/companies/the-hype-agency/overview"}, {"Agency Name": "Sourced craft cocktails", "Website URL": "https://sourcedcraftcocktails.com/", "Profile URL": "https://www.trustedherd.com/companies/sourced-craft-cocktails/overview"}, {"Agency Name": "Bella's Promotions and Events", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/bellas-promotions-and-events/overview"}, {"Agency Name": "Assist Marketing, Inc.", "Website URL": "https://www.assistmarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/assist-marketing-inc/overview"}, {"Agency Name": "Priceless One Management", "Website URL": "http://www.pricelessone.com/", "Profile URL": "https://www.trustedherd.com/companies/priceless-one-management/overview"}, {"Agency Name": "eye5", "Website URL": "https://eye-5.com/", "Profile URL": "https://www.trustedherd.com/companies/eye5/overview"}, {"Agency Name": "Busy Bee Promotions", "Website URL": "http://www.busybeepromotions.com/", "Profile URL": "https://www.trustedherd.com/companies/busy-bee-promotions/overview"}, {"Agency Name": "Mosaic", "Website URL": "https://www.mosaic.com/", "Profile URL": "https://www.trustedherd.com/companies/mosaic/overview"}, {"Agency Name": "Legacy Marketing", "Website URL": "http://www.legacymarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/legacy-marketing/overview"}, {"Agency Name": "More Than Models", "Website URL": "https://www.morethanmodelsinc.com/", "Profile URL": "https://www.trustedherd.com/companies/more-than-models/overview"}, {"Agency Name": "Attack! Marketing", "Website URL": "http://www.attackmarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/attack-marketing/overview"}, {"Agency Name": "Front Page Retail", "Website URL": "http://www.frontpageretail.com/", "Profile URL": "https://www.trustedherd.com/companies/front-page-retail/overview"}, {"Agency Name": "Advantage Solutions - Brand Execution Team", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/advantage-solutions/overview"}, {"Agency Name": "Ascent Talent", "Website URL": "http://www.ascenttalent.com/", "Profile URL": "https://www.trustedherd.com/companies/ascent-talent/overview"}, {"Agency Name": "STAFFED INC.", "Website URL": "http://www.staffedinc.com/", "Profile URL": "https://www.trustedherd.com/companies/staffed-inc/overview"}, {"Agency Name": "US Event Management", "Website URL": "https://www.useventmanagement.com/", "Profile URL": "https://www.trustedherd.com/companies/us-event-management/overview"}, {"Agency Name": "GMR Marketing", "Website URL": "https://gmrmarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/gmr-marketing/overview"}, {"Agency Name": "The Bench, LLC", "Website URL": "http://www.thebench.us/", "Profile URL": "https://www.trustedherd.com/companies/the-bench-llc/overview"}, {"Agency Name": "IRL", "Website URL": "http://urltoirl.com/", "Profile URL": "https://www.trustedherd.com/companies/irl/overview"}, {"Agency Name": "SETX Marketing Solutions", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/setx-marketing-solutions/overview"}, {"Agency Name": "Productions Plus", "Website URL": "http://www.productions-plus.com/", "Profile URL": "https://www.trustedherd.com/companies/productions-plus/overview"}, {"Agency Name": "Ayatana XP", "Website URL": "http://www.ayatanaxp.com/", "Profile URL": "https://www.trustedherd.com/companies/ayatana-xp/overview"}, {"Agency Name": "B2E", "Website URL": "http://www.b2epromo.com/", "Profile URL": "https://www.trustedherd.com/companies/b2e-promo/overview"}, {"Agency Name": "180 promotions", "Website URL": "http://www.180promotions.com/", "Profile URL": "https://www.trustedherd.com/companies/180-promotions/overview"}, {"Agency Name": "LOVE CORN", "Website URL": "https://lovecorn.com/", "Profile URL": "https://www.trustedherd.com/companies/love-corn/overview"}, {"Agency Name": "Elevate Global US", "Website URL": "https://weareelevate.global/", "Profile URL": "https://www.trustedherd.com/companies/elevate-staffing/overview"}, {"Agency Name": "Talent Tree Agency", "Website URL": "http://www.talenttreesp.com/", "Profile URL": "https://www.trustedherd.com/companies/talent-tree/overview"}, {"Agency Name": "Mundos Group", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/mundos-group/overview"}, {"Agency Name": "The Field Marketing Agency", "Website URL": "https://www.thefieldmarketingagency.com/", "Profile URL": "https://www.trustedherd.com/companies/the-field-marketing-agency/overview"}, {"Agency Name": "Aras Promotions", "Website URL": "http://www.araspromotions.com/", "Profile URL": "https://www.trustedherd.com/companies/aras-promotions/overview"}, {"Agency Name": "Betting Hero", "Website URL": "http://www.bettinghero.com/", "Profile URL": "https://www.trustedherd.com/companies/betting-hero/overview"}, {"Agency Name": "Extreme Marketing and Promotions", "Website URL": "https://extrememp.com/", "Profile URL": "https://www.trustedherd.com/companies/extreme-marketing-and-promotions/overview"}, {"Agency Name": "2020 Companies", "Website URL": "http://2020companies.com/", "Profile URL": "https://www.trustedherd.com/companies/2020-companies/overview"}, {"Agency Name": "The Lynne Experience", "Website URL": "http://lynnexp.com/", "Profile URL": "https://www.trustedherd.com/companies/the-lynne-experience/overview"}, {"Agency Name": "Victory Agency", "Website URL": "http://victory-agency.com/", "Profile URL": "https://www.trustedherd.com/companies/victory-marketing/overview"}, {"Agency Name": "EBOOST Vitalize Labs, LLC", "Website URL": "https://www.eboost.com/", "Profile URL": "https://www.trustedherd.com/companies/eboost-vitalize-labs-llc/overview"}, {"Agency Name": "Sandpiper Productions", "Website URL": "http://www.sandpiperbrands.com/", "Profile URL": "https://www.trustedherd.com/companies/sandpiper-productions-llc/overview"}, {"Agency Name": "Youth Marketing Connection", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/youth-marketing-connection/overview"}, {"Agency Name": "Go Local Promotions, Inc.", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/go-local-promotions-inc/overview"}, {"Agency Name": "Market Recon", "Website URL": "http://www.marketrecon.ca/", "Profile URL": "https://www.trustedherd.com/companies/market-recon/overview"}, {"Agency Name": "NGP", "Website URL": "https://newgroundpromos.com/", "Profile URL": "https://www.trustedherd.com/companies/new-ground-promotions/overview"}, {"Agency Name": "Michele & Group, Inc.", "Website URL": "http://micheleandgroup.com/", "Profile URL": "https://www.trustedherd.com/companies/michele--group-inc/overview"}, {"Agency Name": "EPI Promotions", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/epi-promotions/overview"}, {"Agency Name": "Promobile Marketing", "Website URL": "http://promobilemarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/promobile-marketing/overview"}, {"Agency Name": "VIBRANT Marketing", "Website URL": "http://vibrant.marketing/", "Profile URL": "https://www.trustedherd.com/companies/vibrant-marketing/overview"}, {"Agency Name": "TROC Global", "Website URL": "https://jobs.trocglobal.com/", "Profile URL": "https://www.trustedherd.com/companies/troc-global/overview"}, {"Agency Name": "Allied OneSource", "Website URL": "https://www.alliedonesource.com/", "Profile URL": "https://www.trustedherd.com/companies/allied-onesource/overview"}, {"Agency Name": "Brewco Marketing Group", "Website URL": "http://brewco.com/", "Profile URL": "https://www.trustedherd.com/companies/brewco-marketing-group/overview"}, {"Agency Name": "Truman Vodka", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/truman-vodka/overview"}, {"Agency Name": "XCLSV Media", "Website URL": "https://xclsvmedia.com/igaming-landing-page/", "Profile URL": "https://www.trustedherd.com/companies/xclsv-media/overview"}, {"Agency Name": "HS Brands Global", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/hs-brands/overview"}, {"Agency Name": "The Majestic Photobooth", "Website URL": "https://www.majesticphotobooths.com/", "Profile URL": "https://www.trustedherd.com/companies/the-majestic-photobooth-co/overview"}, {"Agency Name": "Moment - Drink your meditation (Botanical Sodas and Teas)", "Website URL": "https://drinkmoment.com/", "Profile URL": "https://www.trustedherd.com/companies/moment--drink-your-meditation/overview"}, {"Agency Name": "Premier Connections LLC", "Website URL": "http://premierconnectionsllc.com/", "Profile URL": "https://www.trustedherd.com/companies/premier-connections-llc/overview"}, {"Agency Name": "Leaf Home", "Website URL": "https://www.leafhome.com/", "Profile URL": "https://www.trustedherd.com/companies/leaf-home/overview"}, {"Agency Name": "Every Sip", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/every-sip/overview"}, {"Agency Name": "Haute Brands", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/haute-brands/overview"}, {"Agency Name": "Once Upon A Coconut", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/once-upon-a-coconut/overview"}, {"Agency Name": "Noli's Company", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/nolis-company/overview"}, {"Agency Name": "Gambling.com Group", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/gamblingcom-group/overview"}, {"Agency Name": "IGH Global Corporation", "Website URL": "https://pure-fiber.com/", "Profile URL": "https://www.trustedherd.com/companies/igh-global-corporation/overview"}, {"Agency Name": "Jinx", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/jinx/overview"}, {"Agency Name": "Monte Event Space/Monte Showbar", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/monte-event-spacemonte-showbar/overview"}, {"Agency Name": "NFM+Dymun", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/nfmdymun/overview"}, {"Agency Name": "Otterly Baths", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/the-bath-masters/overview"}, {"Agency Name": "Renewal by Andersen Metro & Midwest", "Website URL": "http://windowdoor.com/", "Profile URL": "https://www.trustedherd.com/companies/renewal-by-andersen-metro--midwest/overview"}, {"Agency Name": "Touchdown Marketing", "Website URL": "http://tdmarketing.net/", "Profile URL": "https://www.trustedherd.com/companies/touchdown-marketing/overview"}, {"Agency Name": "Advent Promotions", "Website URL": "http://www.adventpromos.com/", "Profile URL": "https://www.trustedherd.com/companies/advent-promotions/overview"}, {"Agency Name": "Branded Promo Talent", "Website URL": "https://linktr.ee/brandedpromotalent", "Profile URL": "https://www.trustedherd.com/companies/branded-promo-talent/overview"}, {"Agency Name": "Final Stretch Events", "Website URL": "http://www.finalstretchevents.com/", "Profile URL": "https://www.trustedherd.com/companies/final-stretch-events/overview"}, {"Agency Name": "KPG Event Services", "Website URL": "https://kpgeventservices.com/join-team-kpg/", "Profile URL": "https://www.trustedherd.com/companies/kpg-event-staffing/overview"}, {"Agency Name": "MDC Experience Agency, LLC", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/mdc-experience-agency-llc/overview"}, {"Agency Name": "InCast Marketing", "Website URL": "http://www.incastmarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/incast-marketing/overview"}, {"Agency Name": "Dynamic Sponsorships LLC", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/dynamic-sponsorships-llc/overview"}, {"Agency Name": "Dentsu Creative - MKTG", "Website URL": "https://www.dentsucreative.com/", "Profile URL": "https://www.trustedherd.com/companies/dentsu-creative--mktg/overview"}, {"Agency Name": "Selffee", "Website URL": "https://selff.ee/", "Profile URL": "https://www.trustedherd.com/companies/selffee/overview"}, {"Agency Name": "In-Field Promo", "Website URL": "http://www.infieldpromo.com/", "Profile URL": "https://www.trustedherd.com/companies/infield-promo/overview"}, {"Agency Name": "firefly team events", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/firefly-team-events/overview"}, {"Agency Name": "Devolution Solutions", "Website URL": "http://www.devolutionsolutions.com/", "Profile URL": "https://www.trustedherd.com/companies/devolution-solutions/overview"}, {"Agency Name": "JBC", "Website URL": "https://jbc.team/", "Profile URL": "https://www.trustedherd.com/companies/jbc-reach--jbc-style/overview"}, {"Agency Name": "Just tinkering around", "Website URL": "http://www.justtinkeringaround.com/", "Profile URL": "https://www.trustedherd.com/companies/just-tinkering-around/overview"}, {"Agency Name": "Light Speed", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/lightspeed/overview"}, {"Agency Name": "Brand Activate", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/brand-activate/overview"}, {"Agency Name": "Wingteam LLC", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/wingteam-llc/overview"}, {"Agency Name": "Buckalew Hospitality", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/buckalew-hospitality/overview"}, {"Agency Name": "GypsyLife llc", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/gypsylife-llc/overview"}, {"Agency Name": "BirdieBox", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/birdiebox/overview"}, {"Agency Name": "Brand Besties", "Website URL": "https://www.brandbesties.com/", "Profile URL": "https://www.trustedherd.com/companies/brand-besties/overview"}, {"Agency Name": "Backwoods Promotions Inc.", "Website URL": "http://www.backwoodspromo.com/", "Profile URL": "https://www.trustedherd.com/companies/backwoods/overview"}, {"Agency Name": "Clearly Promotions", "Website URL": "http://www.clearlypromotions.com/", "Profile URL": "https://www.trustedherd.com/companies/clearly-promotions/overview"}, {"Agency Name": "Southport Marketing", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/southport-marketing/overview"}, {"Agency Name": "SODO Marketing", "Website URL": "http://sodomarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/sodo-marketing/overview"}, {"Agency Name": "Post Meridiem Spirit Company", "Website URL": "https://postmeridiemspirits.com/", "Profile URL": "https://www.trustedherd.com/companies/post-meridiem-spirit-company/overview"}, {"Agency Name": "mybuzzlab", "Website URL": "http://www.mybuzzlab.com/", "Profile URL": "https://www.trustedherd.com/companies/mybuzzlab/overview"}, {"Agency Name": "On Tour 24/7, Inc.", "Website URL": "http://www.ontour247.com/", "Profile URL": "https://www.trustedherd.com/companies/on-tour-247/overview"}, {"Agency Name": "Nu World Marketing Group LLC", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/nu-world-marketing-group-llc/overview"}, {"Agency Name": "Experience Marketing", "Website URL": "http://www.expmkt.com/", "Profile URL": "https://www.trustedherd.com/companies/experience-marketing/overview"}, {"Agency Name": "5614 Marketing", "Website URL": "http://www.fiftysix14.com/", "Profile URL": "https://www.trustedherd.com/companies/5614-marketing/overview"}, {"Agency Name": "Havas Street", "Website URL": "https://www.havasstreet.com/", "Profile URL": "https://www.trustedherd.com/companies/havas-street/overview"}, {"Agency Name": "BeatBox Beverages", "Website URL": "https://beatboxbeverages.com/", "Profile URL": "https://www.trustedherd.com/companies/beatbox-beverages/overview"}, {"Agency Name": "Santoki", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/santoki/overview"}, {"Agency Name": "Enlightened Edutainment", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/enlightened-edutainment/overview"}, {"Agency Name": "Premiere Models & Talent, Inc.", "Website URL": "http://www.premieremodelsinc.com/", "Profile URL": "https://www.trustedherd.com/companies/premiere-models--talent-inc/overview"}, {"Agency Name": "PPL Events, Inc", "Website URL": "http://www.thepplevents.com/", "Profile URL": "https://www.trustedherd.com/companies/ppl-events-inc/overview"}, {"Agency Name": "ENVE Models", "Website URL": "http://www.envemodels.com/", "Profile URL": "https://www.trustedherd.com/companies/enve-models/overview"}, {"Agency Name": "Newbridge Marketing Group", "Website URL": "https://www.newbridgemg.com/", "Profile URL": "https://www.trustedherd.com/companies/newbridge-marketing-group/overview"}, {"Agency Name": "Flow Wine Group", "Website URL": "http://www.flowwinegroup.com/", "Profile URL": "https://www.trustedherd.com/companies/flow-wine-group/overview"}, {"Agency Name": "Mash Live (formerly Mash+Studio)", "Website URL": "http://mashlive.com/", "Profile URL": "https://www.trustedherd.com/companies/mash--studio/overview"}, {"Agency Name": "SPG Talent", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/spg-talent/overview"}, {"Agency Name": "MGA Advertising", "Website URL": "http://www.mgaadvertising.com/", "Profile URL": "https://www.trustedherd.com/companies/mga-advertising/overview"}, {"Agency Name": "Signature Marketing Inc.", "Website URL": "http://www.signaturemarketinginc.com/", "Profile URL": "https://www.trustedherd.com/companies/signature-marketing-inc/overview"}, {"Agency Name": "Polite in Public", "Website URL": "http://politeinpublic.com/", "Profile URL": "https://www.trustedherd.com/companies/polite-in-public/overview"}, {"Agency Name": "Mustard Lane", "Website URL": "http://www.mustardlane.com/", "Profile URL": "https://www.trustedherd.com/companies/mustard-lane/overview"}, {"Agency Name": "Slicker Beverage Insights", "Website URL": "http://www.slickerbeverageinsights.com/", "Profile URL": "https://www.trustedherd.com/companies/slicker-beverage-insights/overview"}, {"Agency Name": "AGAR", "Website URL": "http://www.theagar.com/", "Profile URL": "https://www.trustedherd.com/companies/agar/overview"}, {"Agency Name": "MKTG", "Website URL": "http://www.mktg.com/", "Profile URL": "https://www.trustedherd.com/companies/mktg/overview"}, {"Agency Name": "Guerilla Roots Marketing", "Website URL": "http://www.thinkguerilla.com/", "Profile URL": "https://www.trustedherd.com/companies/guerilla-roots-marketing/overview"}, {"Agency Name": "A & D Promo Bookings", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/a--d-promo-bookings/overview"}, {"Agency Name": "Factory 360", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/factory-360/overview"}, {"Agency Name": "Norton National", "Website URL": "http://www.nortonnational.com/", "Profile URL": "https://www.trustedherd.com/companies/norton-national/overview"}, {"Agency Name": "Spitfire Event Marketing", "Website URL": "http://spitfireeventmarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/spitfire-event-marketing/overview"}, {"Agency Name": "Civitas Experiential", "Website URL": "http://www.civitasxp.com/", "Profile URL": "https://www.trustedherd.com/companies/civitas-marketing/overview"}, {"Agency Name": "SJL Modeling & Promotions", "Website URL": "http://www.sjlmodelingandpromotions.com/", "Profile URL": "https://www.trustedherd.com/companies/sjl-modeling--promotions/overview"}, {"Agency Name": "AMCI Global", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/amci-global/overview"}, {"Agency Name": "Creative State", "Website URL": "http://www.creativestatex.com/", "Profile URL": "https://www.trustedherd.com/companies/creative-state/overview"}, {"Agency Name": "CEA Staffing", "Website URL": "http://www.ceastaffing.com/", "Profile URL": "https://www.trustedherd.com/companies/cea-staffing/overview"}, {"Agency Name": "Aspire Healthy Energy Drinks", "Website URL": "http://www.aspiredrinks.com/", "Profile URL": "https://www.trustedherd.com/companies/aspire-healthy-energy-drinks/overview"}, {"Agency Name": "B9Models", "Website URL": "https://b9models.com/", "Profile URL": "https://www.trustedherd.com/companies/b9models/overview"}, {"Agency Name": "Two Dots Productions", "Website URL": "http://www.twodotsproductions.com/", "Profile URL": "https://www.trustedherd.com/companies/two-dots-productions/overview"}, {"Agency Name": "The Grayscale Agency", "Website URL": "http://www.thegrayscaleagency.com/", "Profile URL": "https://www.trustedherd.com/companies/the-grayscale-agency/overview"}, {"Agency Name": "HardyHarris Marketing", "Website URL": "http://hardyharris.com/", "Profile URL": "https://www.trustedherd.com/companies/hardyharris-marketing/overview"}, {"Agency Name": "HADCO Staffing Solutions", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/hadco-staffing-solutions/overview"}, {"Agency Name": "Field Day", "Website URL": "http://www.fieldday.app/", "Profile URL": "https://www.trustedherd.com/companies/field-day/overview"}, {"Agency Name": "Marketing Activations Group - MAG", "Website URL": "http://www.marketingactivationsgroup.com/", "Profile URL": "https://www.trustedherd.com/companies/marketing-activations-group--mag/overview"}, {"Agency Name": "VIP Talent & Events", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/vip-talent--events/overview"}, {"Agency Name": "M2W, Inc.", "Website URL": "http://www.m2winc.com/", "Profile URL": "https://www.trustedherd.com/companies/m2w-inc/overview"}, {"Agency Name": "Pourtastic Tastings", "Website URL": "http://www.pourtastictastings.com/", "Profile URL": "https://www.trustedherd.com/companies/pourtastic-tastings/overview"}, {"Agency Name": "Gourmet Demonstration Services", "Website URL": "http://www.gourmetdemo.com/", "Profile URL": "https://www.trustedherd.com/companies/gourmet-demonstration-services/overview"}, {"Agency Name": "Blossom Talent", "Website URL": "http://www.blossomtalent.com/", "Profile URL": "https://www.trustedherd.com/companies/blossom-talent/overview"}, {"Agency Name": "Perfect 10 Promotions", "Website URL": "http://www.perfect10promotions.com/", "Profile URL": "https://www.trustedherd.com/companies/perfect-10-promotions/overview"}, {"Agency Name": "Duck Yes Events Corp", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/duck-yes-events-corp/overview"}, {"Agency Name": "Joy Squad", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/joy-squad/overview"}, {"Agency Name": "AB Model Management", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/ab-model-management/overview"}, {"Agency Name": "Lucky XP Marketing/Lucky 415", "Website URL": "https://luckymkg.com/", "Profile URL": "https://www.trustedherd.com/companies/lucky-415-marketing-promotions/overview"}, {"Agency Name": "The Sneaker Exit", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/the-sneaker-exit/overview"}, {"Agency Name": "CatWalk Production Star One", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/catwalk-production-star-one/overview"}, {"Agency Name": "Kokada", "Website URL": "https://kokada.com/", "Profile URL": "https://www.trustedherd.com/companies/kokada/overview"}, {"Agency Name": "A Little Bird", "Website URL": "https://alittle-bird.com/", "Profile URL": "https://www.trustedherd.com/companies/a-little-bird/overview"}, {"Agency Name": "A vegas expression", "Website URL": "http://www.avegasexpression.com/", "Profile URL": "https://www.trustedherd.com/companies/a-vegas-expression/overview"}, {"Agency Name": "The PM Agency", "Website URL": "http://www.thepmagencyinc.com/", "Profile URL": "https://www.trustedherd.com/companies/the-pm-agency/overview"}, {"Agency Name": "The Hive Inc.", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/the-hive-inc/overview"}, {"Agency Name": "Trade Lions", "Website URL": "https://www.trade-lions.com/", "Profile URL": "https://www.trustedherd.com/companies/trade-lions/overview"}, {"Agency Name": "Yerbae", "Website URL": "https://yerbae.com/", "Profile URL": "https://www.trustedherd.com/companies/yerbae/overview"}, {"Agency Name": "Propelle + Konnect", "Website URL": "http://www.propellekonnect.com/", "Profile URL": "https://www.trustedherd.com/companies/propelle--konnect/overview"}, {"Agency Name": "Tend", "Website URL": "https://www.workwithtend.com/", "Profile URL": "https://www.trustedherd.com/companies/tend/overview"}, {"Agency Name": "Paradym Group", "Website URL": "http://www.theparadymgroup.com/", "Profile URL": "https://www.trustedherd.com/companies/paradym-group/overview"}, {"Agency Name": "National Street Teams", "Website URL": "http://www.nationalstreetteams.com/", "Profile URL": "https://www.trustedherd.com/companies/national-street-teams/overview"}, {"Agency Name": "A-TEAM PROMOS", "Website URL": "http://www.a-teampromos.com/", "Profile URL": "https://www.trustedherd.com/companies/ateam-promos/overview"}, {"Agency Name": "Becreative Marketing", "Website URL": "http://www.becreativemarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/becreative-marketing/overview"}, {"Agency Name": "Podium Marketing", "Website URL": "http://podium-marketing.com/", "Profile URL": "https://www.trustedherd.com/companies/podium-marketing/overview"}, {"Agency Name": "TideSmart Global", "Website URL": "https://tidesmart.com/", "Profile URL": "https://www.trustedherd.com/companies/tidesmart-experiential/overview"}, {"Agency Name": "PBA Promotions", "Website URL": "http://www.pbapromos.com/", "Profile URL": "https://www.trustedherd.com/companies/promotional-brand-ambassadors-inc/overview"}, {"Agency Name": "Tanteo Spirits", "Website URL": "https://www.tanteotequila.com/", "Profile URL": "https://www.trustedherd.com/companies/tanteo-spirits/overview"}, {"Agency Name": "Balance Solution Group Inc", "Website URL": "http://www.balancesolutiongroup.com/", "Profile URL": "https://www.trustedherd.com/companies/balance-solution-group/overview"}, {"Agency Name": "Black Rose Agency", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/black-rose-agency/overview"}, {"Agency Name": "24Seven", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/24seven/overview"}, {"Agency Name": "ESM Pros", "Website URL": "http://esmpros.com/", "Profile URL": "https://www.trustedherd.com/companies/esm-pros/overview"}, {"Agency Name": "LNL Agency", "Website URL": "https://www.lnlagency.com/", "Profile URL": "https://www.trustedherd.com/companies/lnl-agency/overview"}, {"Agency Name": "The Infinite Agency", "Website URL": "https://theinfiniteagency.com/", "Profile URL": "https://www.trustedherd.com/companies/the-infinite-agency/overview"}, {"Agency Name": "VML (Formely Geometry!)", "Website URL": "https://www.vml.com/", "Profile URL": "https://www.trustedherd.com/companies/vmlyr/overview"}, {"Agency Name": "Interactive Dallas, LLC", "Website URL": "http://www.interactivedallas.com/", "Profile URL": "https://www.trustedherd.com/companies/interactive-dallas-llc/overview"}, {"Agency Name": "Key Components Tasting Company", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/key-components-tasting-company/overview"}, {"Agency Name": "NewScope Marketing", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/newscope-marketing/overview"}, {"Agency Name": "MealPal", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/mealpal/overview"}, {"Agency Name": "Brand Ambassadors", "Website URL": "http://www.brandambassadors.com/", "Profile URL": "https://www.trustedherd.com/companies/brandambassadorscom/overview"}, {"Agency Name": "Beacon Brand Solutions", "Website URL": "http://www.beaconexp.com/", "Profile URL": "https://www.trustedherd.com/companies/beacon-brand-solutions/overview"}, {"Agency Name": "ESMPros LLC", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/esmpros-llc/overview"}, {"Agency Name": "Pro Motion, Inc.", "Website URL": "http://www.promotion1.com/", "Profile URL": "https://www.trustedherd.com/companies/pro-motion-inc/overview"}, {"Agency Name": "The Caddy Girls", "Website URL": "https://www.thecaddygirls.com/", "Profile URL": "https://www.trustedherd.com/companies/the-caddy-girls/overview"}, {"Agency Name": "Brand Allure", "Website URL": "http://brandallure.com/", "Profile URL": "https://www.trustedherd.com/companies/brand-allure/overview"}, {"Agency Name": "SUM XP", "Website URL": "http://www.sumxp.com/", "Profile URL": "https://www.trustedherd.com/companies/sum-xp/overview"}, {"Agency Name": "Bliss Events and Staffing", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/bliss-events-and-staffing/overview"}, {"Agency Name": "KTD Staffing", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/ktd-staffing/overview"}, {"Agency Name": "Next Marketing", "Website URL": "http://www.nextmarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/next-marketing/overview"}, {"Agency Name": "Broadway Crew", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/broadway-crew/overview"}, {"Agency Name": "The Renee Godin Agency (aka RGA Model Management)", "Website URL": "http://www.reneegodin.com/", "Profile URL": "https://www.trustedherd.com/companies/the-renee-godin-agency-aka-rga-model-management/overview"}, {"Agency Name": "Gigs by Diesel", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/gigs-by-diesel/overview"}, {"Agency Name": "Health and Fitness Activations", "Website URL": "http://www.healthandfitnessactivations.com/", "Profile URL": "https://www.trustedherd.com/companies/health-and-fitness-staffing/overview"}, {"Agency Name": "Public Label", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/public-label/overview"}, {"Agency Name": "IQBAR", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/iq-bar/overview"}, {"Agency Name": "Clear Choice Photos", "Website URL": "http://clearchoicephotobooth.com/", "Profile URL": "https://www.trustedherd.com/companies/clear-choice-photos/overview"}, {"Agency Name": "Greenlight Marketing", "Website URL": "http://www.greenlight.marketing/", "Profile URL": "https://www.trustedherd.com/companies/greenlight-marketing/overview"}, {"Agency Name": "Wiseguys Events", "Website URL": "http://www.wiseguysevents.com/", "Profile URL": "https://www.trustedherd.com/companies/wiseguys-events/overview"}, {"Agency Name": "Headway Workforce Solutions", "Website URL": "https://www.headwaywfs.com/", "Profile URL": "https://www.trustedherd.com/companies/headway-workforce-solutions/overview"}, {"Agency Name": "Kinetic Events Staffing", "Website URL": "http://kineticevents.com/", "Profile URL": "https://www.trustedherd.com/companies/kinetic-events-marketing/overview"}, {"Agency Name": "Promo Social", "Website URL": "http://www.promosocial.com/", "Profile URL": "https://www.trustedherd.com/companies/promo-social/overview"}, {"Agency Name": "Experiential Marketing Partners", "Website URL": "https://www.empmktg.com/", "Profile URL": "https://www.trustedherd.com/companies/experiential-marketing-partners/overview"}, {"Agency Name": "DV Marketing", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/raz/overview"}, {"Agency Name": "Total Event Solutions", "Website URL": "http://www.total-event-solutions.com/", "Profile URL": "https://www.trustedherd.com/companies/total-event-solutions/overview"}, {"Agency Name": "Street Factory Media", "Website URL": "http://www.streetfactorymedia.com/", "Profile URL": "https://www.trustedherd.com/companies/street-factory-media/overview"}, {"Agency Name": "ICE Factor", "Website URL": "http://www.icefactor.com/", "Profile URL": "https://www.trustedherd.com/companies/ice-factor/overview"}, {"Agency Name": "Sage Event Management", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/sage-event-management/overview"}, {"Agency Name": "Superfecta Management, LLC", "Website URL": "http://superfectamgmt.com/", "Profile URL": "https://www.trustedherd.com/companies/superfecta-management-llc/overview"}, {"Agency Name": "Activation Pro", "Website URL": "http://www.activationpro.com/", "Profile URL": "https://www.trustedherd.com/companies/activation-pro/overview"}, {"Agency Name": "Roadwerx", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/roadwerx/overview"}, {"Agency Name": "GoInspo", "Website URL": "http://goinspo.com/", "Profile URL": "https://www.trustedherd.com/companies/go-inspo/overview"}, {"Agency Name": "BC Model and Talent", "Website URL": "https://bcmodelandtalent.com/", "Profile URL": "https://www.trustedherd.com/companies/bc-models-and-talent/overview"}, {"Agency Name": "RedPeg", "Website URL": "http://www.redpegmarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/redpeg/overview"}, {"Agency Name": "On Tap Marketing", "Website URL": "http://www.ontapmarketing.net/", "Profile URL": "https://www.trustedherd.com/companies/on-tap-marketing/overview"}, {"Agency Name": "Ace the Event", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/ace-the-event/overview"}, {"Agency Name": "Media Star Promotions", "Website URL": "http://www.mediastarpromo.com/", "Profile URL": "https://www.trustedherd.com/companies/media-star-promotions/overview"}, {"Agency Name": "Polaris Brand Promotions", "Website URL": "http://www.polarisbrandpromotions.com/", "Profile URL": "https://www.trustedherd.com/companies/polaris-brand-promotions/overview"}, {"Agency Name": "Next Events & Entertainment", "Website URL": "http://www.nextentertainmentx.com/", "Profile URL": "https://www.trustedherd.com/companies/next-events--entertainment/overview"}, {"Agency Name": "Air Fresh Marketing", "Website URL": "http://www.airfreshmarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/air-fresh-marketing/overview"}, {"Agency Name": "Modern Talent USA", "Website URL": "http://www.moderntalentusa.com/", "Profile URL": "https://www.trustedherd.com/companies/modern-talent-usa/overview"}, {"Agency Name": "One Line Agency", "Website URL": "http://www.onelineagency.com/", "Profile URL": "https://www.trustedherd.com/companies/one-line-agency/overview"}, {"Agency Name": "Party Crew LLC", "Website URL": "http://www.yourpartycrew.com/", "Profile URL": "https://www.trustedherd.com/companies/party-crew-llc/overview"}, {"Agency Name": "Live Talent", "Website URL": "http://www.livetalentnow.com/", "Profile URL": "https://www.trustedherd.com/companies/live-talent/overview"}, {"Agency Name": "Hollywood's Productions, Inc.", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/hollywoods-productions-inc/overview"}, {"Agency Name": "NW Polite Society", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/nw-polite-society/overview"}, {"Agency Name": "Tinsel Experiential Design", "Website URL": "https://tinseldesign.com/", "Profile URL": "https://www.trustedherd.com/companies/tinsel-experiential-design/overview"}, {"Agency Name": "ATN (Across The Nation) Event Staffing", "Website URL": "https://atneventstaffing.com/", "Profile URL": "https://www.trustedherd.com/companies/atn-promo-across-the-nation/overview"}, {"Agency Name": "DBC America", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/dbc/overview"}, {"Agency Name": "Suspence Marketing", "Website URL": "https://suspencemarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/suspence-experimental-marketing/overview"}, {"Agency Name": "Fishbowl Spirits", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/fishbowl-spirits/overview"}, {"Agency Name": "GOAT Events", "Website URL": "http://www.goat-events.com/", "Profile URL": "https://www.trustedherd.com/companies/goat-staffing/overview"}, {"Agency Name": "Star One Events", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/star-one-events/overview"}, {"Agency Name": "Cat 'n Mouse", "Website URL": "http://www.catnmousepromo.com/", "Profile URL": "https://www.trustedherd.com/companies/cat-n-mouse/overview"}, {"Agency Name": "SV Promotions", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/sv-promotions/overview"}, {"Agency Name": "ROI Marketing", "Website URL": "http://www.roi-marketing.com/", "Profile URL": "https://www.trustedherd.com/companies/roi-marketing/overview"}, {"Agency Name": "Radikel Events", "Website URL": "http://www.radikelevents.com/", "Profile URL": "https://www.trustedherd.com/companies/radikel-events/overview"}, {"Agency Name": "About Face Models", "Website URL": "https://aboutfacemodels.com/", "Profile URL": "https://www.trustedherd.com/companies/about-face-models/overview"}, {"Agency Name": "The Tasting Source", "Website URL": "http://thetastingsouce.com/", "Profile URL": "https://www.trustedherd.com/companies/the-tasting-source/overview"}, {"Agency Name": "SDI Marketing", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/sdi-marketing/overview"}, {"Agency Name": "Street Team Promotion", "Website URL": "http://www.streetteampromotion.com/", "Profile URL": "https://www.trustedherd.com/companies/street-team-promotion/overview"}, {"Agency Name": "JD RMD Group, LLC.", "Website URL": "http://www.rmdgroupinc.com/", "Profile URL": "https://www.trustedherd.com/companies/jd-rmd-group-llc/overview"}, {"Agency Name": "Facetime Consulting & Promotions", "Website URL": "https://www.facetimepromo.com/", "Profile URL": "https://www.trustedherd.com/companies/facetime-consulting--promotions/overview"}, {"Agency Name": "Kit International Talent", "Website URL": "http://kitinternationaltalent.com/", "Profile URL": "https://www.trustedherd.com/companies/kit-international-talent/overview"}, {"Agency Name": "NX5 Theatrical", "Website URL": "http://theempirestripsback.com/", "Profile URL": "https://www.trustedherd.com/companies/nx5-theatrical/overview"}, {"Agency Name": "Encore Nationwide", "Website URL": "http://www.encorenationwide.com/", "Profile URL": "https://www.trustedherd.com/companies/encore-nationwide/overview"}, {"Agency Name": "Expertaste Marketing", "Website URL": "http://www.expertastemarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/expertaste-marketing/overview"}, {"Agency Name": "LA Photo Party", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/la-photo-party/overview"}, {"Agency Name": "FLY Talent Worldwide", "Website URL": "http://www.flytalentworldwide.com/", "Profile URL": "https://www.trustedherd.com/companies/fly-talent-worldwide/overview"}, {"Agency Name": "JD RMD Group", "Website URL": "https://rmdgroupinc.com/", "Profile URL": "https://www.trustedherd.com/companies/jd-rmd-group/overview"}, {"Agency Name": "E Staff Assist", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/e-staff-assist/overview"}, {"Agency Name": "Career Group Events", "Website URL": "https://www.careergroupcompanies.com/career-group-events", "Profile URL": "https://www.trustedherd.com/companies/career-group-companies-event-team/overview"}, {"Agency Name": "Adult Beverage Solutions", "Website URL": "http://www.adultbeveragesolutions.com/index.php", "Profile URL": "https://www.trustedherd.com/companies/adult-beverage-solutions/overview"}, {"Agency Name": "NASCAR Racing Experience", "Website URL": "http://nascarracingexperience.com/", "Profile URL": "https://www.trustedherd.com/companies/nascar-racing-experience/overview"}, {"Agency Name": "WTS Transportation", "Website URL": "https://transportwts.com/", "Profile URL": "https://www.trustedherd.com/companies/wts-player-services--transport/overview"}, {"Agency Name": "Pace Events", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/pace-events/overview"}, {"Agency Name": "Promomash Inc.", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/promomash-inc/overview"}, {"Agency Name": "Studio D Productions", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/studio-d-productions/overview"}, {"Agency Name": "Prime Experiential", "Website URL": "http://primeexperiential.com/", "Profile URL": "https://www.trustedherd.com/companies/prime-experiential/overview"}, {"Agency Name": "Brand Ambassador Inc.", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/brand-ambassador-inc/overview"}, {"Agency Name": "Promo team Nashville", "Website URL": "http://www.promoteamnashville.com/", "Profile URL": "https://www.trustedherd.com/companies/promo-team-nashville/overview"}, {"Agency Name": "Epic 5 Marketing & Promotions Agency", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/epic-5-marketing--promotions-agency/overview"}, {"Agency Name": "Event Marketing & Promotions", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/renes-productions/overview"}, {"Agency Name": "Colab Marketing Group", "Website URL": "http://www.colabmarketinggroup.com/", "Profile URL": "https://www.trustedherd.com/companies/colab-marketing-group/overview"}, {"Agency Name": "V Squared Events", "Website URL": "http://www.vsquaredevents.com/", "Profile URL": "https://www.trustedherd.com/companies/v-squared-events/overview"}, {"Agency Name": "B&B Beverage Management", "Website URL": "http://www.beveragemgmt.com/", "Profile URL": "https://www.trustedherd.com/companies/bb-beverage-management-llc/overview"}, {"Agency Name": "POP Cats", "Website URL": "http://www.popcats.co/", "Profile URL": "https://www.trustedherd.com/companies/pop-cats/overview"}, {"Agency Name": "S&B Promotions,LLC", "Website URL": "http://www.sb-promotionsllc.com/", "Profile URL": "https://www.trustedherd.com/companies/sb-promotionsllc/overview"}, {"Agency Name": "Instawork", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/instawork/overview"}, {"Agency Name": "Vantage Trade Show Talent", "Website URL": "https://www.models4tradeshows.com/", "Profile URL": "https://www.trustedherd.com/companies/vantage-advertising/overview"}, {"Agency Name": "OutCold", "Website URL": "https://www.outcold.com/", "Profile URL": "https://www.trustedherd.com/companies/outcold/overview"}, {"Agency Name": "Engage Marketing and Promotions", "Website URL": "http://engagetheagency.com/", "Profile URL": "https://www.trustedherd.com/companies/engage-marketing-and-promotions/overview"}, {"Agency Name": "Phun for all", "Website URL": "http://www.phunforall.com/", "Profile URL": "https://www.trustedherd.com/companies/phun-for-all/overview"}, {"Agency Name": "RNR Tire Express", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/rnr-tire-express/overview"}, {"Agency Name": "BDS Connected Solutions", "Website URL": "https://www.bdssolutions.com/", "Profile URL": "https://www.trustedherd.com/companies/bds-connected-solutions/overview"}, {"Agency Name": "True Honey Teas", "Website URL": "http://www.truehoneyteas.com/", "Profile URL": "https://www.trustedherd.com/companies/true-honey-teas/overview"}, {"Agency Name": "LeMonde Studio", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/lemonde-studio/overview"}, {"Agency Name": "Kruto Vodka", "Website URL": "http://krutovodka.com/", "Profile URL": "https://www.trustedherd.com/companies/kruto-vodka/overview"}, {"Agency Name": "CMT Agency", "Website URL": "http://www.cmtagency.com/", "Profile URL": "https://www.trustedherd.com/companies/cmt-agency/overview"}, {"Agency Name": "The Kat Agency", "Website URL": "http://www.thekatagency.com/", "Profile URL": "https://www.trustedherd.com/companies/kat-agency/overview"}, {"Agency Name": "National Experiential", "Website URL": "https://www.nationalexperiential.com/", "Profile URL": "https://www.trustedherd.com/companies/national-experiential/overview"}, {"Agency Name": "Kitu Life Inc Super Coffee", "Website URL": "http://www.kitulife.com/", "Profile URL": "https://www.trustedherd.com/companies/kitu-life-inc-super-coffee/overview"}, {"Agency Name": "Louder Experiences", "Website URL": "http://www.louderexp.com/", "Profile URL": "https://www.trustedherd.com/companies/louder-experiences/overview"}, {"Agency Name": "Acosta", "Website URL": "http://acosta.jobs/", "Profile URL": "https://www.trustedherd.com/companies/acosta/overview"}, {"Agency Name": "CosPro Marketing", "Website URL": "http://www.cosproagency.com/", "Profile URL": "https://www.trustedherd.com/companies/cospro/overview"}, {"Agency Name": "Wow Ward on Wine", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/wow--ward-on-wine/overview"}, {"Agency Name": "TBS Promotions", "Website URL": "https://thebarbershopmarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/tbs-promotions/overview"}, {"Agency Name": "D&Company Promotions, LLC", "Website URL": "http://www.dandcompanypromotions.com/", "Profile URL": "https://www.trustedherd.com/companies/dcompany-promotions-llc/overview"}, {"Agency Name": "Aim & Fire", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/aim--fire/overview"}, {"Agency Name": "worthmm", "Website URL": "http://www.worthmm.com/", "Profile URL": "https://www.trustedherd.com/companies/worthmm/overview"}, {"Agency Name": "High Profile Models (Promotions)", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/high-profile-models/overview"}, {"Agency Name": "Eye Candid", "Website URL": "http://www.eye-candidllc.com/", "Profile URL": "https://www.trustedherd.com/companies/eye-candid/overview"}, {"Agency Name": "PromoStaffing Inc", "Website URL": "https://promostaffing.net/", "Profile URL": "https://www.trustedherd.com/companies/promostaffing-inc/overview"}, {"Agency Name": "ShowMax Marketing", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/showmax-marketing/overview"}, {"Agency Name": "Event Experts Live LLC", "Website URL": "http://www.eventexperts.live/", "Profile URL": "https://www.trustedherd.com/companies/event-experts-live-llc/overview"}, {"Agency Name": "Bliss", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/bliss/overview"}, {"Agency Name": "Red Carpet Productions", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/red-carpet-productions/overview"}, {"Agency Name": "First Crush Tastings Inc", "Website URL": "https://tastelearngrow.com/", "Profile URL": "https://www.trustedherd.com/companies/first-crush-tastings-inc/overview"}, {"Agency Name": "Store Celebrations", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/store-celebrations/overview"}, {"Agency Name": "BoothEasy Photo Booth Company", "Website URL": "http://www.bootheasy.com/", "Profile URL": "https://www.trustedherd.com/companies/bootheasy-photo-booth-company/overview"}, {"Agency Name": "NeoSol Marketing", "Website URL": "http://www.neosolcorp.com/", "Profile URL": "https://www.trustedherd.com/companies/neosol/overview"}, {"Agency Name": "LiveCity Events", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/livecity-events/overview"}, {"Agency Name": "Thunder Child", "Website URL": "http://thunderchild.com/", "Profile URL": "https://www.trustedherd.com/companies/thunder-child/overview"}, {"Agency Name": "GCG Event Partners", "Website URL": "https://gcgeventpartners.com/", "Profile URL": "https://www.trustedherd.com/companies/gcg-event-partners/overview"}, {"Agency Name": "Icon Marketing", "Website URL": "http://www.iconfoodmarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/icon-marketing/overview"}, {"Agency Name": "Modern Paradigm Marketing", "Website URL": "http://www.modernparadigmmarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/modern-paradigms/overview"}, {"Agency Name": "Global Market Research Group", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/global-market-research-group/overview"}, {"Agency Name": "Dixon Golf", "Website URL": "http://www.dixongolf.com/", "Profile URL": "https://www.trustedherd.com/companies/dixon-golf/overview"}, {"Agency Name": "GT Universe", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/gt-universe/overview"}, {"Agency Name": "on the avenue marketing", "Website URL": "http://www.ontheavenuemarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/on-the-avenue-marketing/overview"}, {"Agency Name": "Elite Marketing Group", "Website URL": "http://www.elitemg.com/", "Profile URL": "https://www.trustedherd.com/companies/elite-marketing-group/overview"}, {"Agency Name": "Shiftgig (company no longer active)", "Website URL": "http://www.shiftgig.com/", "Profile URL": "https://www.trustedherd.com/companies/shiftgig/overview"}, {"Agency Name": "OMG! - Ozark Marketing Group", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/omg--ozark-management-group/overview"}, {"Agency Name": "Nutrabolt", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/c4-energy--nutrabolt/overview"}, {"Agency Name": "The Top Shelf Agency", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/the-top-shelf-agency/overview"}, {"Agency Name": "Elite Staffing Management", "Website URL": "http://elitestaffingmanagement.com/", "Profile URL": "https://www.trustedherd.com/companies/elite-staffing-management/overview"}, {"Agency Name": "Shutterbooth", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/shutterbooth/overview"}, {"Agency Name": "Zonda Events", "Website URL": "http://www.hanleywood.com/", "Profile URL": "https://www.trustedherd.com/companies/hanley-wood-media-inc/overview"}, {"Agency Name": "Monarch & Company", "Website URL": "http://www.monarchandcompany.com/", "Profile URL": "https://www.trustedherd.com/companies/monarch--company/overview"}, {"Agency Name": "Trusted Herd", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/trusted-herd/overview"}, {"Agency Name": "GoGorilla Media", "Website URL": "http://gogorillamedia.com/", "Profile URL": "https://www.trustedherd.com/companies/gogorilla-media/overview"}, {"Agency Name": "United Fray", "Website URL": "http://www.unitedfray.com/", "Profile URL": "https://www.trustedherd.com/companies/united-fray/overview"}, {"Agency Name": "Aimd Right Crew", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/aimd-right-crew/overview"}, {"Agency Name": "Party Host Helpers", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/party-host-helpers/overview"}, {"Agency Name": "Champagne Creative Group", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/champagne-creative-group/overview"}, {"Agency Name": "RMNG - Brand Experiences by Roaming Hunger", "Website URL": "https://roaminghunger.com/experiential-marketing-agency/", "Profile URL": "https://www.trustedherd.com/companies/rmng--brand-experiences-by-roaming-hunger/overview"}, {"Agency Name": "Event Staffing Live", "Website URL": "http://www.eventstaffinglive.com/", "Profile URL": "https://www.trustedherd.com/companies/event-staffing-live/overview"}, {"Agency Name": "Promo Staffing", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/promo-staffing/overview"}, {"Agency Name": "Kre8 Media Outdoor Advertising", "Website URL": "https://www.kre8outdooradvertising.com/", "Profile URL": "https://www.trustedherd.com/companies/kre8-media-outdoor-advertising/overview"}, {"Agency Name": "Front & Center Marketing", "Website URL": "http://front-centermarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/front--center-marketing/overview"}, {"Agency Name": "GroundSwell Group", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/groundswell-group/overview"}, {"Agency Name": "Geometry Global", "Website URL": "http://www.geometry.com/", "Profile URL": "https://www.trustedherd.com/companies/geometry-global/overview"}, {"Agency Name": "Beyond Promotions", "Website URL": "http://beyondpromotions.net/", "Profile URL": "https://www.trustedherd.com/companies/beyond-promotions/overview"}, {"Agency Name": "Natural Talent", "Website URL": "http://naturaltalent.co/", "Profile URL": "https://www.trustedherd.com/companies/natural-talent/overview"}, {"Agency Name": "Brand Greet", "Website URL": "http://www.brandgreet.com/", "Profile URL": "https://www.trustedherd.com/companies/brand-greet/overview"}, {"Agency Name": "360x Events & Promotions", "Website URL": "http://www.360x.agency/", "Profile URL": "https://www.trustedherd.com/companies/360-events--promotions/overview"}, {"Agency Name": "Event Specialist Group", "Website URL": "http://www.eventspecialistgroup.com/", "Profile URL": "https://www.trustedherd.com/companies/event-specialist-group/overview"}, {"Agency Name": "All Terrain Collective", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/all-terrain-collective/overview"}, {"Agency Name": "BookedOut by Shiftgig", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/bookedout/overview"}, {"Agency Name": "Lumiere Talent Agency", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/lumiere-talent-agency/overview"}, {"Agency Name": "Supreme Event Service", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/supreme-event-service/overview"}, {"Agency Name": "Outloud Marketing Event Staffing", "Website URL": "http://www.outloudmarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/outloud-marketing-event-staffing/overview"}, {"Agency Name": "Momentum at the shelf", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/momentum-at-the-shelf/overview"}, {"Agency Name": "J Williams Agency", "Website URL": "http://www.jwilliamsagency.com/", "Profile URL": "https://www.trustedherd.com/companies/j-williams-agency/overview"}, {"Agency Name": "Beverage Marketing Group", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/beverage-marketing-group/overview"}, {"Agency Name": "FUSE MARKETING", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/fuse-marketing/overview"}, {"Agency Name": "CTE Marketing", "Website URL": "http://www.ctemarketing.net/", "Profile URL": "https://www.trustedherd.com/companies/cte-marketing/overview"}, {"Agency Name": "Midwest Promotional Models, INC", "Website URL": "http://www.midwestpromotionalmodels.com/", "Profile URL": "https://www.trustedherd.com/companies/midwest-promotional-models-inc/overview"}, {"Agency Name": "TH Experiential", "Website URL": "https://www.thexperiential.com/", "Profile URL": "https://www.trustedherd.com/companies/th-experiential/overview"}, {"Agency Name": "Julia Valler Event Staffing", "Website URL": "http://www.juliavaller.com/", "Profile URL": "https://www.trustedherd.com/companies/julia-valler-event-staffing/overview"}, {"Agency Name": "Team Building Nation, LLC", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/team-building-nation-llc/overview"}, {"Agency Name": "Sonas Marketing", "Website URL": "http://www.sonasmarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/sonas-marketing/overview"}, {"Agency Name": "Haute Marketing", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/haute-marketing/overview"}, {"Agency Name": "Product Connections", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/product-connections/overview"}, {"Agency Name": "Stafftacular", "Website URL": "http://www.stafftacular.com/", "Profile URL": "https://www.trustedherd.com/companies/stafftacular/overview"}, {"Agency Name": "BeyondSite", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/beyondsite/overview"}, {"Agency Name": "Select promotions", "Website URL": "http://www.selectpromotionsllc.com/", "Profile URL": "https://www.trustedherd.com/companies/select-promotions/overview"}, {"Agency Name": "Allied Global Marketing", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/allied-global-marketing/overview"}, {"Agency Name": "She so corporate", "Website URL": "https://www.shesocorporate.com/", "Profile URL": "https://www.trustedherd.com/companies/she-so-corporate/overview"}, {"Agency Name": "The Model Life Agency", "Website URL": "http://www.themodellifeagency.com/", "Profile URL": "https://www.trustedherd.com/companies/the-model-life-agency/overview"}, {"Agency Name": "GTE Agency", "Website URL": "http://www.gteagency.com/", "Profile URL": "https://www.trustedherd.com/companies/gte-agency/overview"}, {"Agency Name": "HSP Brand Activations", "Website URL": "http://www.hspbrands.com/", "Profile URL": "https://www.trustedherd.com/companies/hsp-brand-activations/overview"}, {"Agency Name": "G of G Inc", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/g-of-g-inc/overview"}, {"Agency Name": "Laura's Raw Honey", "Website URL": "http://www.laurasrawhoney.com/", "Profile URL": "https://www.trustedherd.com/companies/lauras-raw-honey/overview"}, {"Agency Name": "Dakota Events LLC", "Website URL": "http://www.dakotaeventsllc.com/", "Profile URL": "https://www.trustedherd.com/companies/dakota-events-llc/overview"}, {"Agency Name": "Nash Imaging Events", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/nash-imaging-events/overview"}, {"Agency Name": "M Squared Management", "Website URL": "https://www.msquaredmgmt.com/", "Profile URL": "https://www.trustedherd.com/companies/m-squared-management/overview"}, {"Agency Name": "BoBella Promotions", "Website URL": "https://www.bobellapromotions.com/", "Profile URL": "https://www.trustedherd.com/companies/bobella-promotions/overview"}, {"Agency Name": "Merch Merch Baby", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/merch-merch-baby/overview"}, {"Agency Name": "ManMar Entertainment", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/manmar-entertainment/overview"}, {"Agency Name": "Quench", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/quench/overview"}, {"Agency Name": "TSE Staffing & Events", "Website URL": "http://tsestaffing.com/", "Profile URL": "https://www.trustedherd.com/companies/tse-staffing/overview"}, {"Agency Name": "SoHo Experiential", "Website URL": "http://www.sohoexp.com/", "Profile URL": "https://www.trustedherd.com/companies/soho-experiential/overview"}, {"Agency Name": "160over90", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/160over90/overview"}, {"Agency Name": "G&R Connex", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/gr-connex/overview"}, {"Agency Name": "Synergy Marketing and Promotions", "Website URL": "https://www.synergypromotes.com/", "Profile URL": "https://www.trustedherd.com/companies/synergy-marketing-and-promotions/overview"}, {"Agency Name": "Diverse Agency", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/diverse-agency/overview"}, {"Agency Name": "Incursion marketing", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/incursion-marketing/overview"}, {"Agency Name": "Sky Event Marketing", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/sky-event-marketing/overview"}, {"Agency Name": "First Class Models", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/first-class-models/overview"}, {"Agency Name": "9Rooftops", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/9rooftops/overview"}, {"Agency Name": "Boothtube Photo Booths LLC", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/boothtube-photo-booths-llc/overview"}, {"Agency Name": "The Hart Agency", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/hart-agency/overview"}, {"Agency Name": "MSNTayler Mgmt.", "Website URL": "http://msntayler.com/", "Profile URL": "https://www.trustedherd.com/companies/msn-tayler/overview"}, {"Agency Name": "Ready Set Go Staffing", "Website URL": "http://www.readysetgostaffing.com/", "Profile URL": "https://www.trustedherd.com/companies/ready-set-go-staffing/overview"}, {"Agency Name": "Texas Brand Ambassadors", "Website URL": "http://texasbrandambassadors.com/", "Profile URL": "https://www.trustedherd.com/companies/texas-brand-ambassadors/overview"}, {"Agency Name": "Adelante Live", "Website URL": "http://adelantelive.com/", "Profile URL": "https://www.trustedherd.com/companies/adelante-live/overview"}, {"Agency Name": "Unicorn World", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/unicorn-world/overview"}, {"Agency Name": "Skout backcountry", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/skout-backcountry/overview"}, {"Agency Name": "Lead Detectors", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/lead-detectors/overview"}, {"Agency Name": "Game Nights (Home of Jack Trivia & Jack Bingo)", "Website URL": "http://www.jacktrivia.com/", "Profile URL": "https://www.trustedherd.com/companies/jack-trivia--jack-bingo/overview"}, {"Agency Name": "8 Days A Week Event Staffing & Promotions", "Website URL": "http://www.8dayspromotions.com/", "Profile URL": "https://www.trustedherd.com/companies/8-days-a-week-event-staffing--promotions/overview"}, {"Agency Name": "PUSH Agency", "Website URL": "http://www.thepushagency.com/", "Profile URL": "https://www.trustedherd.com/companies/push-agency/overview"}, {"Agency Name": "Beyond Site", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/beyond-site/overview"}, {"Agency Name": "Fusion Event Staffing", "Website URL": "http://www.fusioneventstaffing.com/", "Profile URL": "https://www.trustedherd.com/companies/fusion-event-staffing/overview"}, {"Agency Name": "DoNow Research", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/donow-research/overview"}, {"Agency Name": "Creative Management Group - CMG", "Website URL": "http://www.creativemanagementgrp.com/", "Profile URL": "https://www.trustedherd.com/companies/creative-management-group--cmg/overview"}, {"Agency Name": "Axion Experiential", "Website URL": "http://www.axionexp.com/", "Profile URL": "https://www.trustedherd.com/companies/axion-experiential/overview"}, {"Agency Name": "DriveShop", "Website URL": "http://www.driveshop.com/", "Profile URL": "https://www.trustedherd.com/companies/driveshop/overview"}, {"Agency Name": "Yofiit", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/yofiit/overview"}, {"Agency Name": "Ev0lver", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/ev0lver/overview"}, {"Agency Name": "TEES Productions", "Website URL": "https://tees.productions/", "Profile URL": "https://www.trustedherd.com/companies/tees-productions/overview"}, {"Agency Name": "Makai Inc", "Website URL": "http://www.makaiinc.com/", "Profile URL": "https://www.trustedherd.com/companies/makai-inc/overview"}, {"Agency Name": "Activation Army", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/activation-army/overview"}, {"Agency Name": "Midwest Promotional Marketing", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/midwest-promotional-marketing/overview"}, {"Agency Name": "Bella Grace Marketing LLC", "Website URL": "http://www.bellagracemarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/bella-grace-marketing-llc/overview"}, {"Agency Name": "Fastbreak.ai", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/fastbreakai/overview"}, {"Agency Name": "Experience Revolt Marketing", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/experience-revolt-marketing/overview"}, {"Agency Name": "The Prego Expo", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/the-prego-expo/overview"}, {"Agency Name": "SESH", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/sesh/overview"}, {"Agency Name": "Soleil Marketing", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/soleil-marketing/overview"}, {"Agency Name": "Siren Staffing", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/siren-staffing/overview"}, {"Agency Name": "Michael Alan Group - MAG", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/michael-alan-group/overview"}, {"Agency Name": "Event Aces", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/event-aces/overview"}, {"Agency Name": "ingster experiential", "Website URL": "https://ingsterexperiential.com/", "Profile URL": "https://www.trustedherd.com/companies/ingster-marketing/overview"}, {"Agency Name": "Work Genius", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/work-genius/overview"}, {"Agency Name": "Brand By Experience, LLC", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/brand-by-experience-llc/overview"}, {"Agency Name": "Pivotal Productions Inc.", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/pivotal-productions-inc/overview"}, {"Agency Name": "Best Reps", "Website URL": "http://www.bestreps.net/", "Profile URL": "https://www.trustedherd.com/companies/best-reps/overview"}, {"Agency Name": "Mirus Promotions", "Website URL": "http://www.miruspromotions.com/", "Profile URL": "https://www.trustedherd.com/companies/mirus-promotions/overview"}, {"Agency Name": "Activent Marketing", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/activent-marketing/overview"}, {"Agency Name": "Trilogy", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/trilogy/overview"}, {"Agency Name": "Elevated Events", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/elevated-events/overview"}, {"Agency Name": "Eleven8 Event Staff", "Website URL": "https://elev8.la/", "Profile URL": "https://www.trustedherd.com/companies/elevate-event-staff/overview"}, {"Agency Name": "Dracko", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/dracko/overview"}, {"Agency Name": "PolarisLIVE!", "Website URL": "http://polariseventsolutions.com/", "Profile URL": "https://www.trustedherd.com/companies/polaris-live-event-solutions/overview"}, {"Agency Name": "Tri Spirits", "Website URL": "http://www.trispirits.com/", "Profile URL": "https://www.trustedherd.com/companies/tri-spirits/overview"}, {"Agency Name": "Brand Marketers", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/brand-marketers/overview"}, {"Agency Name": "Radar360", "Website URL": "https://www.radar360.com/", "Profile URL": "https://www.trustedherd.com/companies/radar360/overview"}, {"Agency Name": "Charmed Promotions", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/charmed-promotions/overview"}, {"Agency Name": "Good Culture", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/good-culture/overview"}, {"Agency Name": "Body Mind Spirit Celebration", "Website URL": "https://www.bmse.net/", "Profile URL": "https://www.trustedherd.com/companies/mind-body-spirit-expo/overview"}, {"Agency Name": "Hire Dragons", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/dragon-spirits-marketing-and-promotion/overview"}, {"Agency Name": "Mariano Events", "Website URL": "http://www.marianoevents.com/", "Profile URL": "https://www.trustedherd.com/companies/mariano-events/overview"}, {"Agency Name": "Premier Team Building & Interactive Experiences", "Website URL": "https://premierteambuilding.com/", "Profile URL": "https://www.trustedherd.com/companies/premier-team-building--interactive-experiences/overview"}, {"Agency Name": "Crooz Vodka Water", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/crooz-vodka-water/overview"}, {"Agency Name": "Digital Events Inc.", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/digital-events-inc/overview"}, {"Agency Name": "Strategic Group", "Website URL": "http://www.strategicgroup.tv/", "Profile URL": "https://www.trustedherd.com/companies/strategic-group/overview"}, {"Agency Name": "FDM Marketing", "Website URL": "http://fdmmarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/fdm-marketing/overview"}, {"Agency Name": "nomADic genius Marketing & Advertising", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/nomadic-genius-marketing--advertising/overview"}, {"Agency Name": "Convention Model", "Website URL": "http://www.conventionmodel.com/", "Profile URL": "https://www.trustedherd.com/companies/convention-model/overview"}, {"Agency Name": "Signature Concepts", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/signature-concepts/overview"}, {"Agency Name": "BI Worldwide", "Website URL": "http://www.biworldwide.com/", "Profile URL": "https://www.trustedherd.com/companies/bi-worldwide/overview"}, {"Agency Name": "Natural Brokerage", "Website URL": "http://naturalbrokerage.com/", "Profile URL": "https://www.trustedherd.com/companies/natural-brokerage/overview"}, {"Agency Name": "Lyft", "Website URL": "http://www.lyft.com/", "Profile URL": "https://www.trustedherd.com/companies/lyft/overview"}, {"Agency Name": "Promo Rockstars Staffing", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/promo-rockstars-staffing/overview"}, {"Agency Name": "Promote Live, Inc", "Website URL": "http://www.promotelive.com/", "Profile URL": "https://www.trustedherd.com/companies/promote-live/overview"}, {"Agency Name": "IBG (Inspired By Grace)", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/ibg-inspired-by-grace/overview"}, {"Agency Name": "Victory Dance Foods", "Website URL": "https://victorydancefoods.com/", "Profile URL": "https://www.trustedherd.com/companies/victory-dance-foods/overview"}, {"Agency Name": "Ward on Wine", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/ward-on-wine/overview"}, {"Agency Name": "Infinity Marketing Team", "Website URL": "http://infinitymarketing.com/", "Profile URL": "https://www.trustedherd.com/companies/infinity-marketing-team/overview"}, {"Agency Name": "Ignite Experience Agency", "Website URL": "http://www.theigniteagency.com/", "Profile URL": "https://www.trustedherd.com/companies/ignite-event-marketing/overview"}, {"Agency Name": "The 288 Group", "Website URL": "http://www.the288group.com/", "Profile URL": "https://www.trustedherd.com/companies/the-288-group/overview"}, {"Agency Name": "North State Promos", "Website URL": "http://www.northstatepromos.com/", "Profile URL": "https://www.trustedherd.com/companies/north-state-promos/overview"}, {"Agency Name": "PopBookings", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/popbookings/overview"}, {"Agency Name": "Protein2o", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/protein2o/overview"}, {"Agency Name": "Framework Event Staffing", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/framework-event-staffing/overview"}, {"Agency Name": "The NM Agency", "Website URL": "http://www.thenmagency.com/", "Profile URL": "https://www.trustedherd.com/companies/the-nm-agency/overview"}, {"Agency Name": "Morning Boost Marketing LLC", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/morning-boost-marketing-llc/overview"}, {"Agency Name": "Synapse Marketing", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/synapse-marketing/overview"}, {"Agency Name": "Event-Pros, Inc.", "Website URL": "https://event-pros.squarespace.com/", "Profile URL": "https://www.trustedherd.com/companies/eventpros-inc/overview"}, {"Agency Name": "Fortified LLC", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/fortified-llc/overview"}, {"Agency Name": "switch", "Website URL": "https://switch.us/", "Profile URL": "https://www.trustedherd.com/companies/switch/overview"}, {"Agency Name": "The Bolt Agency", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/the-bolt-agency/overview"}, {"Agency Name": "Prestige Marketing", "Website URL": "http://www.prestige-marketing.net/", "Profile URL": "https://www.trustedherd.com/companies/prestige-marketing/overview"}, {"Agency Name": "Modern Promos", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/modern-promos/overview"}, {"Agency Name": "321 Promotional Staffing", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/321-promotional-staffing/overview"}, {"Agency Name": "Stryve Biltong", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/stryve/overview"}, {"Agency Name": "Accent Event Productions", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/accent-event-productions/overview"}, {"Agency Name": "LineLeap", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/lineleap/overview"}, {"Agency Name": "Urban Hydration", "Website URL": "Not found", "Profile URL": "https://www.trustedherd.com/companies/urban-hydration/overview"}, {"Agency Name": "NFuse 360 Marketing", "Website URL": "http://www.itsbetterlive.co/", "Profile URL": "https://www.trustedherd.com/companies/nfuse-360-marketing/overview"}];
+        
+        const agencies = rawData.map(a => ({
+            'Agency Name': (a['Agency Name'] || '').trim(),
+            'Website URL': (a['Website URL'] && a['Website URL'] !== 'Not found') ? a['Website URL'].trim() : '',
+            'Profile URL': (a['Profile URL'] && a['Profile URL'] !== 'Not found') ? a['Profile URL'].trim() : ''
+        }));
+
+        let currentData = [...agencies];
+        let sortCol = 'Agency Name';
+        let sortAsc = true;
+
+        const tableBody = document.getElementById('tableBody');
+        const searchInput = document.getElementById('searchInput');
+        const sortSelect = document.getElementById('sortSelect');
+
+        const fallbackIcon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23515154'%3E%3Cpath d='M19 19V4h-4V3H5v16H3v2h18v-2h-2zm-6 0H7V5h6v14zm4 0h-2V6h2v13z'/%3E%3C/svg%3E";
+
+        function renderTable(data) {
+            tableBody.innerHTML = '';
+            
+            if (data.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="3">
+                            <div class="no-results">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <h2>No agencies found</h2>
+                                <p>Try adjusting your search terms.</p>
+                            </div>
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            data.forEach(agency => {
+                const tr = document.createElement('tr');
+                
+                // Name & Logo extraction
+                const tdName = document.createElement('td');
+                let domain = null;
+                if (agency['Website URL']) {
+                    try {
+                        domain = new URL(agency['Website URL']).hostname;
+                    } catch(e) {}
+                }
+
+                const imgSrc = domain 
+                    ? `https://www.google.com/s2/favicons?domain=${domain}&sz=128` 
+                    : fallbackIcon;
+
+                tdName.innerHTML = `
+                    <div class="agency-brand">
+                        <img src="${imgSrc}" alt="" class="agency-logo" onerror="this.onerror=null; this.src='${fallbackIcon}';" />
+                        <span class="agency-name">${agency['Agency Name'] || 'Unknown'}</span>
+                    </div>
+                `;
+                
+                // Website
+                const tdWeb = document.createElement('td');
+                if (agency['Website URL']) {
+                    tdWeb.innerHTML = `<a href="${agency['Website URL']}" target="_blank" class="link-badge btn-web">Visit Website</a>`;
+                } else {
+                    tdWeb.innerHTML = '<span class="no-link">—</span>';
+                }
+
+                // Profile
+                const tdProf = document.createElement('td');
+                if (agency['Profile URL']) {
+                    tdProf.innerHTML = `<a href="${agency['Profile URL']}" target="_blank" class="link-badge btn-profile">View Profile</a>`;
+                } else {
+                    tdProf.innerHTML = '<span class="no-link">—</span>';
+                }
+
+                tr.appendChild(tdName);
+                tr.appendChild(tdWeb);
+                tr.appendChild(tdProf);
+                tableBody.appendChild(tr);
+            });
+        }
+
+        function applySort() {
+            // Update Table Headers UI
+            document.querySelectorAll('th').forEach(th => th.classList.remove('active'));
+            document.querySelectorAll('.sort-icon').forEach(icon => {
+                icon.innerHTML = '<span>▲</span><span>▼</span>';
+            });
+
+            const icon = document.getElementById(`sort-${sortCol}`);
+            if (icon) {
+                icon.parentElement.parentElement.classList.add('active');
+                icon.innerHTML = sortAsc ? '<span>▲</span>' : '<span>▼</span>';
+            }
+
+            // Sync Dropdown
+            let selectVal = "";
+            if (sortCol === 'Agency Name') selectVal = sortAsc ? 'name_asc' : 'name_desc';
+            if (sortCol === 'Website URL') selectVal = 'web_asc';
+            if (sortCol === 'Profile URL') selectVal = 'prof_asc';
+            sortSelect.value = selectVal;
+
+            // Sort logic
+            currentData.sort((a, b) => {
+                let valA = a[sortCol].toLowerCase();
+                let valB = b[sortCol].toLowerCase();
+                
+                if (valA < valB) return sortAsc ? -1 : 1;
+                if (valA > valB) return sortAsc ? 1 : -1;
+                return 0;
+            });
+
+            renderTable(currentData);
+        }
+
+        // Clicking a table header (Desktop)
+        function handleHeaderSort(column, shortName) {
+            if (sortCol === column) {
+                sortAsc = !sortAsc;
+            } else {
+                sortCol = column;
+                sortAsc = true;
+            }
+            applySort();
+        }
+
+        // Changing the select dropdown (Mobile/Alternative)
+        sortSelect.addEventListener('change', (e) => {
+            const val = e.target.value;
+            if (val === 'name_asc') { sortCol = 'Agency Name'; sortAsc = true; }
+            else if (val === 'name_desc') { sortCol = 'Agency Name'; sortAsc = false; }
+            else if (val === 'web_asc') { sortCol = 'Website URL'; sortAsc = true; }
+            else if (val === 'prof_asc') { sortCol = 'Profile URL'; sortAsc = true; }
+            applySort();
+        });
+
+        // Search
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            currentData = agencies.filter(a => a['Agency Name'].toLowerCase().includes(term));
+            applySort(); // Re-sort and render
+        });
+
+        // INITIALIZE ON LOAD
+        // Start sorted by name A-Z by default
+        sortCol = 'Agency Name';
+        sortAsc = true;
+        applySort();
+
+    </script>
+</body>
+</html>
